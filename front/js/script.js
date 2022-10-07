@@ -1,6 +1,4 @@
-// Fetching data from the Backend API
-
-// fetch all products
+// Fetching all products from the Backend API
 const getProducts = async () => {
   const fetchProducts = await fetch(`http://localhost:3000/api/products`).then(
     (response) => {
@@ -11,10 +9,11 @@ const getProducts = async () => {
   );
   return fetchProducts;
 };
-const displayProducts = (products) => {
+// displaying products in UI
+const displayProducts = (data) => {
   const container = document.getElementById("items");
-  products.then((data) => {
-    data.map((product) => {
+  data.then((products) => {
+    products.map((product) => {
       container.insertAdjacentHTML(
         "afterbegin",
         `
