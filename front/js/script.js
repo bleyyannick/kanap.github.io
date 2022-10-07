@@ -7,27 +7,28 @@ const getProducts = async () => {
       }
     }
   );
+  // Todo : handle error;
   return fetchProducts;
 };
 // displaying products in UI
-const displayProducts = (data) => {
+const displayProducts = (dataPromise) => {
   const container = document.getElementById("items");
-  data.then((products) => {
-    products.map((product) => {
-      container.insertAdjacentHTML(
-        "afterbegin",
-        `
-                 <a href="./product.html?id=${product._id}">
-                     <article>
-                     <img src="${product.imageUrl}" alt="${product.altTxt}">
-                     <h3 class="productName">${product.name}</h3>
-                     <p class="productDescription">${product.description}</p>
-                     </article>
-                 </a>
-                 `
-      );
-    });
+  dataPromise.then((products) => {
+    const html = products.map((product) => buildProductHTML(product));
+    container.innerHTML = html.join("");
   });
 };
+
+const buildProductHTML = (
+  product
+) => `<a href="./product.html?id=${product._id}">
+          <article>
+          <img src="${product.imageUrl}" alt="${product.altTxt}">
+          <h3 class="productName">${product.name}</h3>
+          <p class="productDescription">${product.description}</p>
+          </article>
+        </a>
+      `;
+
 const products = getProducts();
 displayProducts(products);
