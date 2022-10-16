@@ -5,7 +5,7 @@
 // fetch id of a product in url parameters
 const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
-const cart = JSON.parse(localStorage.getItem("cart")) || []; // a la place recupere ton panier
+const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 // HTML elements
 const img = document.querySelector(".item__img");
@@ -41,23 +41,25 @@ const displayProduct = (dataPromise) => {
   });
 };
 
+// display colors values in colors select box
 const colorProductTextHTML = (colorProduct) =>
   `<option value="${colorProduct}">${colorProduct}</option>`;
 
 cartButton.addEventListener("click", () => {
-  // la quantité de canapés
-  const quantityProduct = parseInt(inputQuantity.value);
+  const quantityProduct = +inputQuantity.value;
 
-  // si on a selectionné une couleur, que le produit est entre 1 et 100
-  // on crée un produit et on l'ajoute au panier
-  // question : et s'il y a déjà un canapé du même type dans le panier ?
   if (selectColor.value && quantityProduct > 0 && quantityProduct < 100) {
     const colorArticle = selectColor.value;
-    let quantityArticle = parseInt(inputQuantity.value);
+    const priceProduct = +price.textContent;
+    let quantityArticle = +inputQuantity.value;
+    const imgArticle = img.innerHTML;
+
     const article = {
       id: productId,
       qty: quantityArticle,
       color: colorArticle,
+      price: priceProduct,
+      img: imgArticle,
     };
     const shippedArticle = cart.find(
       (art) => art.id == article.id && art.color == article.color
