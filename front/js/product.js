@@ -64,13 +64,12 @@ cartButton.addEventListener("click", () => {
     const shippedArticle = cart.find(
       (art) => art.id == article.id && art.color == article.color
     );
-    console.log(shippedArticle);
     if (shippedArticle) {
       shippedArticle.qty += article.qty;
     } else {
       cart.push(article);
+      window.localStorage.setItem("cart", JSON.stringify(cart));
     }
-    window.localStorage.setItem("cart", JSON.stringify(cart));
   } else {
     // mettre une alerte pour dire au user
   }
@@ -78,3 +77,4 @@ cartButton.addEventListener("click", () => {
 
 const product = getProduct();
 displayProduct(product);
+window.localStorage.setItem("cart", JSON.stringify(cart));
