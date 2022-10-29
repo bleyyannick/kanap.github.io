@@ -1,7 +1,3 @@
-/* 
-
-*/
-
 // fetch id of a product in url parameters
 const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
@@ -15,7 +11,6 @@ const selectColor = document.getElementById("colors");
 const cartButton = document.getElementById("addToCart");
 const inputQuantity = document.getElementById("quantity");
 
-// Fetching product from backend API
 const getProduct = async () => {
   const product = await fetch(
     `http://localhost:3000/api/products/${productId}`
@@ -27,7 +22,6 @@ const getProduct = async () => {
   return product;
 };
 
-// display a product in product.html
 const displayProduct = (dataPromise) => {
   dataPromise.then((product) => {
     img.innerHTML = `<img src="${product.imageUrl}" alt="${product.altTxt}">`;
@@ -41,7 +35,6 @@ const displayProduct = (dataPromise) => {
   });
 };
 
-// display colors values in colors select box
 const colorProductTextHTML = (colorProduct) =>
   `<option value="${colorProduct}">${colorProduct}</option>`;
 
@@ -50,31 +43,30 @@ cartButton.addEventListener("click", () => {
 
   if (selectColor.value && quantityProduct > 0 && quantityProduct < 100) {
     const colorArticle = selectColor.value;
-    const priceProduct = +price.textContent;
     let quantityArticle = +inputQuantity.value;
-    const imgArticle = img.innerHTML;
 
     const article = {
       id: productId,
       qty: quantityArticle,
       color: colorArticle,
-      price: priceProduct,
-      img: imgArticle,
     };
+
     const shippedArticle = cart.find(
       (art) => art.id == article.id && art.color == article.color
     );
+
     if (shippedArticle) {
       shippedArticle.qty += article.qty;
     } else {
       cart.push(article);
-      window.localStorage.setItem("cart", JSON.stringify(cart));
     }
+    window.localStorage.setItem("cart", JSON.stringify(cart));
   } else {
-    // mettre une alerte pour dire au user
+    alert(
+      "Vous devez choisir entre 1 et 100 canapés et selectionner une couleur pour commander"
+    );
   }
 });
 
 const product = getProduct();
 displayProduct(product);
-window.localStorage.setItem("cart", JSON.stringify(cart));
