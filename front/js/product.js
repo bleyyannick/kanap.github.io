@@ -51,16 +51,16 @@ cartButton.addEventListener("click", () => {
       color: colorArticle,
     };
 
-    const shippedArticle = cart.find(
-      (art) => art.id == article.id && art.color == article.color
+    const choosenArticle = cart.find(
+      ({ id, color }) => id == article.id && color == article.color
     );
 
-    if (shippedArticle) {
-      shippedArticle.qty += article.qty;
+    if (choosenArticle) {
+      choosenArticle.qty += article.qty;
     } else {
       cart.push(article);
     }
-    window.localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
   } else {
     alert(
       "Vous devez choisir entre 1 et 100 canapés et selectionner une couleur pour commander"
