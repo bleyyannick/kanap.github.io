@@ -67,52 +67,46 @@ const getTotalPrice = (cart) => {
   const totalPrice = priceProducts.reduce((acc, curr) => acc + curr, 0);
   return totalPrice;
 };
+
 const displayAmountProducts = (cart) => {
   const amountProducts = getTotalPrice(cart);
   totalPriceProducts.textContent = amountProducts;
 };
+
 const displayQuantityProducts = (cart) => {
   const numberOfProducts = cart.reduce((acc, curr) => acc + curr.qty, 0);
   totalQuantityProducts.textContent = numberOfProducts;
 };
-const searchProductToHandle = (item, cart) => {
-  const article = item.closest(".cart__item");
-  const idProduct = article.dataset.id;
-  const colorProduct = article.dataset.color;
-  const productToEdit = cart.find(
-    ({ id, color }) => id === idProduct && color === colorProduct
-  );
-  return productToEdit;
-};
+
 const deleteProduct = (cart) => {
   const itemsToDelete = document.querySelectorAll(".deleteItem");
   itemsToDelete.forEach((item) => {
-    item.addEventListener("click", (e) => {
-      const productToDelete = searchProductToHandle(item, cart);
-    });
+    item.addEventListener("click", (e) => {});
   });
 };
-const editQuantityProducts = (cart) => {
-  const inputProducts = document.querySelectorAll(".itemQuantity");
-  inputProducts.forEach((product) => {
-    product.addEventListener("change", (e) => {
-      const productToEdit = searchProductToHandle(product, cart);
-      productToEdit.qty = +e.target.value;
-      let oldCart = JSON.parse(localStorage.getItem("cart"));
-      const newCart = oldCart.map((product) => {
-        if (
-          product.id === productToEdit.id &&
-          product.color === productToEdit.color
-        )
-          product.qty = productToEdit.qty;
-        return product;
-      });
-      localStorage.clear();
-      localStorage.setItem("cart", JSON.stringify(newCart));
-      displayQuantityProducts(cart);
-      displayAmountProducts(cart);
-    });
+
+const handleQuantityProduct = (cart) => {
+  const quantityInputs = document.querySelectorAll(".itemQuantity");
+  quantityInputs.forEach((inputQuantity) => {
+    inputQuantity.addEventListener("change", (e) =>
+      editProduct(cart, inputQuantity, +e.target.value)
+    );
   });
+};
+
+const editProduct = (cart, itemRef, newQuantity) => {
+  const article = itemRef.closest(".cart__item");
+
+  const productToEdit = cart.find(
+    ({ id, color }) =>
+      id === article.dataset.id && color === article.dataset.color
+  );
+
+  productToEdit.qty = newQuantity;
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  displayQuantityProducts(cart);
+  displayAmountProducts(cart);
 };
 
 const main = async (cart) => {
@@ -121,6 +115,6 @@ const main = async (cart) => {
   displayQuantityProducts(cart);
   displayCart(cart);
   deleteProduct(cart);
-  editQuantityProducts(cart);
+  handleQuantityProduct(cart);
 };
 main(temporaryCart);

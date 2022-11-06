@@ -10,7 +10,7 @@ const getProducts = async () => {
   // Todo : handle error;
   return fetchProducts;
 };
-// displaying products in UI
+
 const displayProducts = (dataPromise) => {
   const container = document.getElementById("items");
   dataPromise.then((products) => {
