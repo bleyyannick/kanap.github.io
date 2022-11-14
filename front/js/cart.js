@@ -78,10 +78,28 @@ const displayQuantityProducts = (cart) => {
   totalQuantityProducts.textContent = numberOfProducts;
 };
 
+const deleteCartProduct = (itemRef, cart) => {
+  const article = itemRef.closest(".cart__item");
+
+  const productToDelete = cart.find(
+    ({ id, color }) =>
+      id === article.dataset.id && color === article.dataset.color
+  );
+  const updatedCart = cart.filter((product) => product !== productToDelete);
+
+  window.location.reload();
+
+  localStorage.setItem("cart", JSON.stringify(updatedCart));
+  displayQuantityProducts(updatedCart);
+  displayAmountProducts(updatedCart);
+};
+
 const deleteProduct = (cart) => {
   const itemsToDelete = document.querySelectorAll(".deleteItem");
   itemsToDelete.forEach((item) => {
-    item.addEventListener("click", (e) => {});
+    item.addEventListener("click", (e) => {
+      deleteCartProduct(item, cart);
+    });
   });
 };
 
