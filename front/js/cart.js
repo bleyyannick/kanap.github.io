@@ -64,8 +64,7 @@ const buildCartHtml = (article) => `
 
 const getTotalPrice = (cart) => {
   const priceProducts = selectedProductsPrice(cart);
-  const totalPrice = priceProducts.reduce((acc, curr) => acc + curr, 0);
-  return totalPrice;
+  return priceProducts.reduce((acc, curr) => acc + curr, 0);
 };
 
 const displayAmountProducts = (cart) => {
@@ -78,22 +77,6 @@ const displayQuantityProducts = (cart) => {
   totalQuantityProducts.textContent = numberOfProducts;
 };
 
-const deleteCartProduct = (itemRef, cart) => {
-  const article = itemRef.closest(".cart__item");
-
-  const productToDelete = cart.find(
-    ({ id, color }) =>
-      id === article.dataset.id && color === article.dataset.color
-  );
-  const updatedCart = cart.filter((product) => product !== productToDelete);
-
-  window.location.reload();
-
-  localStorage.setItem("cart", JSON.stringify(updatedCart));
-  displayQuantityProducts(updatedCart);
-  displayAmountProducts(updatedCart);
-};
-
 const deleteProduct = (cart) => {
   const itemsToDelete = document.querySelectorAll(".deleteItem");
   itemsToDelete.forEach((item) => {
@@ -101,6 +84,25 @@ const deleteProduct = (cart) => {
       deleteCartProduct(item, cart);
     });
   });
+};
+
+const updateCart = (cart) => {
+  localStorage.setItem("cart", JSON.stringify(cart));
+  displayQuantityProducts(cart);
+  displayAmountProducts(cart);
+};
+
+const deleteCartProduct = (itemRef, cart) => {
+  const article = itemRef.closest(".cart__item");
+
+  const productToDelete = cart.find(
+    ({ id, color }) =>
+      id === article.dataset.id && color === article.dataset.color
+  );
+  const newCart = cart.filter((product) => product !== productToDelete);
+
+  window.location.reload();
+  updateCart(newCart);
 };
 
 const handleQuantityProduct = (cart) => {
@@ -121,10 +123,7 @@ const editProduct = (cart, itemRef, newQuantity) => {
   );
 
   productToEdit.qty = newQuantity;
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-  displayQuantityProducts(cart);
-  displayAmountProducts(cart);
+  updateCart(cart);
 };
 
 const main = async (cart) => {
