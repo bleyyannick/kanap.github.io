@@ -1,6 +1,30 @@
 const container = document.getElementById("cart__items");
 const totalQuantityProducts = document.getElementById("totalQuantity");
 const totalPriceProducts = document.getElementById("totalPrice");
+
+const orderForm = document.querySelector(".cart__order__form");
+const orderButton = document.getElementById("order");
+
+const firstNameInput = document.getElementById("firstName");
+const lastNameInput = document.getElementById("lastName");
+const addressInput = document.getElementById("address");
+const cityInput = document.getElementById("city");
+const emailInput = document.getElementById("email");
+
+const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
+const lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
+const addressErrorMsg = document.getElementById("addressErrorMsg");
+const cityErrorMsg = document.getElementById("cityErrorMsg");
+const emailErrorMsg = document.getElementById("emailErrorMsg");
+
+const MAIL_FORMAT = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const VALID_FORMAT = /^[A-Za-z]+$/;
+
+const EMPTY_FIELD = "Veuillez remplir ce champ pour valider le formulaire";
+const INVALID_MAIL_FIELD =
+  "Veuillez remplir ce champ avec une adresse mail valide.";
+const INVALID_FIELD = "Ce champ ne doit contenir que des lettres.";
+
 const temporaryCart = JSON.parse(localStorage.getItem("cart")) || [];
 
 const getProducts = async () => {
@@ -68,8 +92,7 @@ const getTotalPrice = (cart) => {
 };
 
 const displayAmountProducts = (cart) => {
-  const amountProducts = getTotalPrice(cart);
-  totalPriceProducts.textContent = amountProducts;
+  totalPriceProducts.textContent = getTotalPrice(cart);
 };
 
 const displayQuantityProducts = (cart) => {
@@ -79,6 +102,7 @@ const displayQuantityProducts = (cart) => {
 
 const deleteProduct = (cart) => {
   const itemsToDelete = document.querySelectorAll(".deleteItem");
+
   itemsToDelete.forEach((item) => {
     item.addEventListener("click", (e) => {
       deleteCartProduct(item, cart);
@@ -99,9 +123,8 @@ const deleteCartProduct = (itemRef, cart) => {
     ({ id, color }) =>
       id === article.dataset.id && color === article.dataset.color
   );
-  const newCart = cart.filter((product) => product !== productToDelete);
-
-  window.location.reload();
+  const newCart = cart.filter((product) => product.id !== productToDelete.id);
+  article.remove();
   updateCart(newCart);
 };
 
@@ -125,6 +148,81 @@ const editProduct = (cart, itemRef, newQuantity) => {
   productToEdit.qty = newQuantity;
   updateCart(cart);
 };
+
+const inputTextValidation = (inputRef, errorParagraph, errorText) => {
+  if (inputRef.value.trim() === "") {
+    errorParagraph.textContent = errorText;
+    return false;
+  } else {
+    return true;
+  }
+};
+
+const inputValidation = (
+  inputRef,
+  format,
+  errorParagraph,
+  errorFormat,
+  errorText
+) => {
+  if (!inputRef.value.match(format)) {
+    errorParagraph.textContent = errorFormat;
+    return false;
+  } else if (inputTextValidation(inputRef, errorParagraph, errorText)) {
+    return true;
+  }
+};
+
+const formValidation = () => {
+  let isValidMailField = inputValidation(
+    emailInput,
+    MAIL_FORMAT,
+    emailErrorMsg,
+    INVALID_MAIL_FIELD,
+    EMPTY_FIELD
+  );
+  let isValidFirstNameField = inputValidation(
+    firstNameInput,
+    VALID_FORMAT,
+    firstNameErrorMsg,
+    INVALID_FIELD,
+    EMPTY_FIELD
+  );
+
+  let isValidLastNameField = inputValidation(
+    lastNameInput,
+    VALID_FORMAT,
+    lastNameErrorMsg,
+    INVALID_FIELD,
+    EMPTY_FIELD
+  );
+  let isValidAddressField = inputTextValidation(
+    addressInput,
+    addressErrorMsg,
+    EMPTY_FIELD
+  );
+  let isValidCityInput = inputTextValidation(
+    cityInput,
+    cityErrorMsg,
+    EMPTY_FIELD
+  );
+  return (isAllValidFields =
+    isValidMailField &&
+    isValidLastNameField &&
+    isValidCityInput &&
+    isValidAddressField &&
+    isValidFirstNameField);
+};
+orderButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  formValidation();
+
+  if (formValidation()) {
+    console.log("POST");
+  } else {
+    console.log("RESTE LA");
+  }
+});
 
 const main = async (cart) => {
   await completedPriceProducts(cart);
