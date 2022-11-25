@@ -1,12 +1,12 @@
+const URL = "http://localhost:3000/api/products";
 // Fetching all products from the Backend API
+
 const getProducts = async () => {
-  const fetchProducts = await fetch(`http://localhost:3000/api/products`).then(
-    (response) => {
-      if (response.ok) {
-        return response.json();
-      }
+  const fetchProducts = await fetch(URL).then((response) => {
+    if (response.ok) {
+      return response.json();
     }
-  );
+  });
   // Todo : handle error;
   return fetchProducts;
 };
