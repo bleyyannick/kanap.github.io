@@ -41,13 +41,6 @@ const getProducts = async () => {
   }
 };
 
-const postProducts = async () => {
-  try {
-  } catch (error) {
-    alert(`Impossible d'effectuer votre commande.`);
-  }
-};
-
 const completedPriceProducts = async (cart) => {
   const allProducts = await getProducts();
   for (const cartItem of cart) {
@@ -195,6 +188,43 @@ const isValidCity = () => {
   }
   return true;
 };
+const formError = () => {
+  if (!isValidAddress()) {
+    addressErrorMsg.textContent = INVALID_FIELD;
+  }
+  if (!isValidCity()) {
+    cityErrorMsg.textContent = INVALID_FIELD;
+  }
+  if (!isValidLastName()) {
+    lastNameErrorMsg.textContent = INVALID_FIELD;
+  }
+  if (!isValidFirstName()) {
+    firstNameErrorMsg.textContent = INVALID_FIELD;
+  }
+  if (!isValidEmail()) {
+    emailErrorMsg.textContent = INVALID_MAIL_FIELD;
+  }
+};
+const orderProducts = (cart, contact) => {
+  const products = cart.map(({ id }) => id);
+  try {
+    const postProducts = async () => {
+      const response = await fetch(`${URL}/order`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ contact, products }),
+      });
+      const result = await response.json();
+      localStorage.clear();
+      window.location.href = `confirmation.html?id=${result.orderId}`;
+    };
+    postProducts();
+  } catch (error) {
+    alert(`Impossible d'effectuer votre commande.`);
+  }
+};
 
 const main = async (cart) => {
   await completedPriceProducts(cart);
@@ -215,21 +245,7 @@ orderButton.addEventListener("click", (e) => {
     !isValidFirstName() ||
     !isValidLastName()
   ) {
-    if (!isValidAddress()) {
-      addressErrorMsg.textContent = INVALID_FIELD;
-    }
-    if (!isValidCity()) {
-      cityErrorMsg.textContent = INVALID_FIELD;
-    }
-    if (!isValidLastName()) {
-      lastNameErrorMsg.textContent = INVALID_FIELD;
-    }
-    if (!isValidFirstName()) {
-      firstNameErrorMsg.textContent = INVALID_FIELD;
-    }
-    if (!isValidEmail()) {
-      emailErrorMsg.textContent = INVALID_MAIL_FIELD;
-    }
+    formError();
   } else {
     const contact = {
       firstName: firstNameInput.value,
@@ -238,24 +254,6 @@ orderButton.addEventListener("click", (e) => {
       city: cityInput.value,
       email: emailInput.value,
     };
-    const products = temporaryCart.map(({ id }) => id);
-
-    try {
-      const postProducts = async () => {
-        const response = await fetch(`${URL}/order`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ contact, products }),
-        });
-        const result = await response.json();
-        localStorage.clear();
-        window.location.href = `/confirmation.html?id=${result.orderId}`;
-      };
-      postProducts();
-    } catch (error) {
-      alert(`Impossible d'effectuer votre commande.`);
-    }
+    orderProducts(temporaryCart, contact);
   }
 });
