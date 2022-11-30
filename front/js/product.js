@@ -3,6 +3,8 @@ const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
 const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
+const URL = "http://localhost:3000/api/products/";
+
 // HTML elements
 const img = document.querySelector(".item__img");
 const price = document.getElementById("price");
@@ -10,31 +12,36 @@ const description = document.getElementById("description");
 const selectColor = document.getElementById("colors");
 const cartButton = document.getElementById("addToCart");
 const inputQuantity = document.getElementById("quantity");
+const title = document.getElementById("title");
 
+// Get product with his id
 const getProduct = async () => {
-  const product = await fetch(
-    `http://localhost:3000/api/products/${productId}`
-  ).then((response) => {
-    if (response.ok) {
-      return response.json();
+  try {
+    const response = await fetch(`${URL}${productId}`);
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP : ${response.status}`);
     }
-  });
-  return product;
+    const product = await response.json();
+    return product;
+  } catch (error) {
+    alert(`Impossible de récupérer le produit`);
+  }
 };
 
-const displayProduct = (dataPromise) => {
-  dataPromise.then((product) => {
-    img.innerHTML = `<img src="${product.imageUrl}" alt="${product.altTxt}">`;
-    price.innerHTML = `${product.price}`;
-    description.innerHTML = `${product.description}`;
-    const colorsProduct = product.colors;
-    const html = colorsProduct.map((colorProduct) =>
-      colorProductTextHTML(colorProduct)
-    );
-    selectColor.innerHTML += html.join("");
-  });
+// Display all product information in the page
+const displayProduct = (element) => {
+  img.innerHTML = `<img src="${element.imageUrl}" alt="${element.altTxt}">`;
+  price.innerHTML = `${element.price}`;
+  description.innerHTML = `${element.description}`;
+  title.innerHTML = `${element.name}`;
+  const colorsProduct = element.colors;
+  const html = colorsProduct.map((colorProduct) =>
+    colorProductTextHTML(colorProduct)
+  );
+  selectColor.innerHTML += html.join("");
 };
 
+// display all avalaible product colors
 const colorProductTextHTML = (colorProduct) =>
   `<option value="${colorProduct}">${colorProduct}</option>`;
 
@@ -44,22 +51,23 @@ cartButton.addEventListener("click", () => {
   if (selectColor.value && quantityProduct > 0 && quantityProduct < 100) {
     const colorArticle = selectColor.value;
     let quantityArticle = +inputQuantity.value;
-
+    // Create an article
     const article = {
       id: productId,
       qty: quantityArticle,
       color: colorArticle,
     };
-
-    const choosenArticle = cart.find(
+    // find the selected article in the cart
+    const selectedArticle = cart.find(
       ({ id, color }) => id == article.id && color == article.color
     );
-
-    if (choosenArticle) {
-      choosenArticle.qty += article.qty;
+    // if selected article is already in the cart, just update the article quantity
+    if (selectedArticle) {
+      selectedArticle.qty += article.qty;
     } else {
       cart.push(article);
     }
+    // update the localStorage with the cart
     localStorage.setItem("cart", JSON.stringify(cart));
   } else {
     alert(
@@ -68,5 +76,9 @@ cartButton.addEventListener("click", () => {
   }
 });
 
-const product = getProduct();
-displayProduct(product);
+const main = async () => {
+  const product = await getProduct();
+  displayProduct(product);
+};
+
+main();
