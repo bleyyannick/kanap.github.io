@@ -206,7 +206,7 @@ const isValidCity = () => {
   }
   return true;
 };
-// Function that displays an error msg if the form isn't correctly
+// Function that displays an error msg if the form isn't correct
 const formError = () => {
   if (!isValidAddress()) {
     addressErrorMsg.textContent = INVALID_FIELD;
@@ -258,6 +258,15 @@ const orderProducts = (cart, contact) => {
   }
 };
 
+// prevent to order without cart of products
+const preventEmptyOrder = (cart) => {
+  if (cart.length === 0) {
+    alert("Vous n'avez pas d'articles dans votre panier");
+    return false;
+  }
+  return true;
+};
+
 // Function that runs all defined functions below
 const main = async (cart) => {
   await completedPriceProducts(cart);
@@ -277,9 +286,11 @@ orderButton.addEventListener("click", (e) => {
     !isValidCity() ||
     !isValidEmail() ||
     !isValidFirstName() ||
-    !isValidLastName()
+    !isValidLastName() ||
+    !preventEmptyOrder(temporaryCart)
   ) {
     formError();
+    preventEmptyOrder(temporaryCart);
   } else {
     // create a contact for the order
     const contact = {
