@@ -59,7 +59,6 @@ const completedPriceProducts = async (cart, priceProduct) => {
     const correspondingProduct = allProducts.find(
       ({ _id }) => _id == productId
     );
-    //cartItem.price = correspondingProduct.price;
     cartItem.name = correspondingProduct.name;
     cartItem.imageUrl = correspondingProduct.imageUrl;
     cartItem.altTxt = correspondingProduct.altTxt;
@@ -128,7 +127,6 @@ const deleteProduct = (cart) => {
 };
 // update the quantity and price of products
 const updateCart = (cart) => {
-  localStorage.clear();
   localStorage.setItem("cart", JSON.stringify(cart));
   displayAmountProducts(cart);
   displayQuantityProducts(cart);
