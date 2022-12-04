@@ -20,13 +20,21 @@ const cityErrorMsg = document.getElementById("cityErrorMsg");
 const emailErrorMsg = document.getElementById("emailErrorMsg");
 
 const MAIL_FORMAT = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-const VALID_FORMAT = /^[a-zA-Z]+$/;
+const VALID_NAME_FORMAT = /^[a-zA-Z-,]+(\s{0,1}[a-zA-Z-, ])*$/;
+const VALID_ADDRESS_FORMAT = /\w+(\s\w+){2,}/;
+const VALID_CITY_FORMAT = /^[A-Za-z]+$/;
 
 const INVALID_MAIL_FIELD =
   "Veuillez remplir ce champ avec une adresse mail valide.";
-const INVALID_FIELD = "Ce champ ne doit contenir que des lettres.";
+const MISSING_LETTERS_FIELD = "Ce champ ne doit contenir que des lettres.";
+const INVALID_ADDRESS_FIELD =
+  "Ce champ doit être rempli avec le numéro de votre rue, avenue ou boulevard et sans caractères spéciaux.";
 
 const temporaryCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+const sensitiveData = {
+  price: 0,
+};
 
 // get all products from backend API
 const getProducts = async () => {
@@ -44,32 +52,33 @@ const getProducts = async () => {
 
 // Give all informations of selected products that could not be shown in localStorage
 // like prices
-const completedPriceProducts = async (cart) => {
+const completedPriceProducts = async (cart, priceProduct) => {
   const allProducts = await getProducts();
   for (const cartItem of cart) {
     const productId = cartItem.id;
     const correspondingProduct = allProducts.find(
       ({ _id }) => _id == productId
     );
-    cartItem.price = correspondingProduct.price;
+    //cartItem.price = correspondingProduct.price;
     cartItem.name = correspondingProduct.name;
     cartItem.imageUrl = correspondingProduct.imageUrl;
     cartItem.altTxt = correspondingProduct.altTxt;
+    priceProduct.price = correspondingProduct.price;
   }
 };
 
 // Display each selected product
 const displayCart = (cart) => {
-  const htmlCart = cart.map((product) => buildCartHtml(product));
+  const htmlCart = cart.map((product) => buildCartHtml(product, sensitiveData));
   container.innerHTML = htmlCart.join("");
 };
 
 // Compute prices products
-const selectedProductsPrice = (cart) =>
-  cart.map(({ qty, price }) => qty * price);
+const selectedProductsPrice = (cart, { price }) =>
+  cart.map(({ qty }) => qty * price);
 
 // return an HTML article displaying a product
-const buildCartHtml = (article) => `
+const buildCartHtml = (article, { price }) => `
 <article class="cart__item" data-id="${article.id}" data-color="${article.color}">
     <div class="cart__item__img">
       <img src="${article.imageUrl}" alt="${article.altTxt}"/>
@@ -78,7 +87,7 @@ const buildCartHtml = (article) => `
       <div class="cart__item__content__description">
           <h2>${article.name}</h2>
           <p>${article.color}</p>
-          <p>${article.price}</p>
+          <p>${price}</p>
       </div>
     <div class="cart__item__content__settings">
         <div class="cart__item__content__settings__quantity">
@@ -94,7 +103,7 @@ const buildCartHtml = (article) => `
 `;
 // get the total price of selected products
 const getTotalPrice = (cart) => {
-  const priceProducts = selectedProductsPrice(cart);
+  const priceProducts = selectedProductsPrice(cart, sensitiveData);
   return priceProducts.reduce((acc, curr) => acc + curr, 0);
 };
 
@@ -111,7 +120,6 @@ const displayQuantityProducts = (cart) => {
 
 const deleteProduct = (cart) => {
   const itemsToDelete = document.querySelectorAll(".deleteItem");
-
   itemsToDelete.forEach((item) => {
     item.addEventListener("click", (e) => {
       deleteCartProduct(item, cart);
@@ -120,9 +128,10 @@ const deleteProduct = (cart) => {
 };
 // update the quantity and price of products
 const updateCart = (cart) => {
+  localStorage.clear();
   localStorage.setItem("cart", JSON.stringify(cart));
-  displayQuantityProducts(cart);
   displayAmountProducts(cart);
+  displayQuantityProducts(cart);
 };
 
 // select product that must be deleted or edited
@@ -137,9 +146,13 @@ const selectedProduct = (cart, itemRef) => {
 const deleteCartProduct = (itemRef, cart) => {
   const article = itemRef.closest(".cart__item");
   const productToDelete = selectedProduct(cart, itemRef);
-  const newCart = cart.filter(({ id }) => id !== productToDelete.id);
-  article.remove();
+  const newCart = cart.filter(
+    ({ id, color }) =>
+      id !== productToDelete.id || color !== productToDelete.color
+  );
   updateCart(newCart);
+  article.remove();
+  location.reload();
 };
 
 // Edit each quantity of each selected product in the cart
@@ -170,8 +183,8 @@ const isValidEmail = () => {
 // Check if last name field is valid
 const isValidLastName = () => {
   const value = lastNameInput.value;
-  if (value.length === 0) {
-    lastNameErrorMsg.textContent = INVALID_FIELD;
+  if (!value.match(VALID_NAME_FORMAT)) {
+    lastNameErrorMsg.textContent = MISSING_LETTERS_FIELD;
     return false;
   }
   return true;
@@ -180,8 +193,8 @@ const isValidLastName = () => {
 // Check if firstName field is valid
 const isValidFirstName = () => {
   const value = firstNameInput.value;
-  if (!value.match(VALID_FORMAT)) {
-    firstNameErrorMsg.textContent = INVALID_FIELD;
+  if (!value.match(VALID_NAME_FORMAT)) {
+    firstNameErrorMsg.textContent = MISSING_LETTERS_FIELD;
     return false;
   }
   return true;
@@ -190,8 +203,8 @@ const isValidFirstName = () => {
 // Check if address field is valid
 const isValidAddress = () => {
   const value = addressInput.value;
-  if (value.length === 0) {
-    lastNameErrorMsg.textContent = INVALID_FIELD;
+  if (!value.match(VALID_ADDRESS_FORMAT)) {
+    addressErrorMsg.textContent = INVALID_ADDRESS_FIELD;
     return false;
   }
   return true;
@@ -200,29 +213,19 @@ const isValidAddress = () => {
 // Check if city field is valid
 const isValidCity = () => {
   const value = cityInput.value;
-  if (value.length === 0) {
-    cityErrorMsg.textContent = INVALID_FIELD;
+  if (!value.match(VALID_CITY_FORMAT)) {
+    cityErrorMsg.textContent = MISSING_LETTERS_FIELD;
     return false;
   }
   return true;
 };
 // Function that displays an error msg if the form isn't correct
 const formError = () => {
-  if (!isValidAddress()) {
-    addressErrorMsg.textContent = INVALID_FIELD;
-  }
-  if (!isValidCity()) {
-    cityErrorMsg.textContent = INVALID_FIELD;
-  }
-  if (!isValidLastName()) {
-    lastNameErrorMsg.textContent = INVALID_FIELD;
-  }
-  if (!isValidFirstName()) {
-    firstNameErrorMsg.textContent = INVALID_FIELD;
-  }
-  if (!isValidEmail()) {
-    emailErrorMsg.textContent = INVALID_MAIL_FIELD;
-  }
+  isValidAddress();
+  isValidCity();
+  isValidEmail();
+  isValidFirstName();
+  isValidLastName();
 };
 
 // Clear all input fields after submitting form
@@ -269,16 +272,16 @@ const preventEmptyOrder = (cart) => {
 
 // Function that runs all defined functions below
 const main = async (cart) => {
-  await completedPriceProducts(cart);
-  displayAmountProducts(cart);
-  displayQuantityProducts(cart);
+  await completedPriceProducts(cart, sensitiveData);
   displayCart(cart);
   deleteProduct(cart);
+  displayAmountProducts(cart);
+  displayQuantityProducts(cart);
   handleQuantityProduct(cart);
 };
 main(temporaryCart);
 
-// Handle the product order
+// Handle the products order
 orderButton.addEventListener("click", (e) => {
   e.preventDefault();
   if (
